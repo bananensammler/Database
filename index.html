@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -159,6 +161,17 @@
     </footer>
 
     <script>
+        const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
         const pilotRoster = [];
         const ranks = [
             { name: "🔹Trainee🔹", minPoints: 0 },
@@ -184,6 +197,35 @@
             updateRoster();
             alert("Registration successful!");
         });
+
+        // Beispiel: Profil speichern
+        function saveProfile(userId, profileData) {
+        const profileRef = db.collection("profiles").doc(userId);
+        profileRef.set(profileData)
+            .then(() => {
+        console.log("Profil gespeichert");
+        })
+        .catch((error) => {
+            console.error("Fehler beim Speichern des Profils: ", error);
+        });
+
+}
+
+        // Beispiel: Profil abrufen
+        function getProfile(userId) {
+        const profileRef = db.collection("profiles").doc(userId);
+        profileRef.get()
+        .then((doc) => {
+        if (doc.exists) {
+        console.log("Profil-Daten:", doc.data());
+        } else {
+        console.log("Profil nicht gefunden");
+        }
+        })
+        .catch((error) => {
+        console.error("Fehler beim Abrufen des Profils: ", error);
+        });
+}
 
         document.getElementById('flight-form').addEventListener('submit', (e) => {
             e.preventDefault();
