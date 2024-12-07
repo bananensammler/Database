@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PF Lufthansa Virtual - Pilot Logger</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e2f;
+            color: #f4f4f9;
+        }
+
+        header {
+            background: #252545;
+            color: #f4f4f9;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #444;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            gap: 20px;
+        }
+
+        .left, .right {
+            flex: 1;
+        }
+
+        .right {
+            max-width: 600px;
+            overflow-y: auto;
+            height: 600px;
+        }
+
+        .card {
+            background: #2a2a40;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #f4f4f9;
+        }
+
+        footer {
+            background: #252545;
+            color: #f4f4f9;
+            text-align: center;
+            padding: 10px 0;
+            border-top: 2px solid #444;
+        }
+
+        button {
+            background: #444f82;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #555faa;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #555;
+            border-radius: 8px;
+            background-color: #1e1e2f;
+            color: #fff;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #444f82;
+        }
+
+        .points {
+            color: #5daeff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PF Lufthansa Virtual - Pilot Logger</h1>
+    </header>
+
+    <div class="container">
+        <!-- Left Section -->
+        <div class="left">
+            <div class="card">
+                <h2>Register</h2>
+                <form id="register-form">
+                    <label for="register-id">Unique ID (7 digits, e.g., 1234567):</label>
+                    <input type="text" id="register-id" maxlength="7" required>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Log a Flight</h2>
+                <form id="flight-form">
+                    <label for="unique-id">Unique ID:</label>
+                    <input type="text" id="unique-id" maxlength="7" required>
+
+                    <label for="departure">Departure Airport:</label>
+                    <select id="departure" required>
+                        <option value="EGKK">EGKK</option>
+                        <option value="MDPC">MDPC</option>
+                        <option value="EFKT">EFKT</option>
+                        <option value="GCLP">GCLP</option>
+                        <option value="LEMH">LEMH</option>
+                        <option value="LYTV">LYTV</option>
+                    </select>
+
+                    <label for="arrival">Arrival Airport:</label>
+                    <select id="arrival" required>
+                        <option value="EGKK">EGKK</option>
+                        <option value="MDPC">MDPC</option>
+                        <option value="EFKT">EFKT</option>
+                        <option value="GCLP">GCLP</option>
+                        <option value="LEMH">LEMH</option>
+                        <option value="LYTV">LYTV</option>
+                    </select>
+
+                    <button type="submit">Log Flight</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right">
+            <div class="card">
+                <h2>Pilot Roster</h2>
+                <div id="pilot-roster">
+                    <!-- Dynamic pilot data -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 PF Lufthansa Virtual. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const pilotRoster = [];
+        const ranks = [
+            { name: "🔹Trainee🔹", minPoints: 0 },
+            { name: "🔹First Officer🔹", minPoints: 300 },
+            { name: "🔹Senior First Officer🔹", minPoints: 750 },
+            { name: "🔹Captain🔹", minPoints: 1200 },
+            { name: "🔹Senior Captain🔹", minPoints: 2000 },
+            { name: "🔹VIP🔹", minPoints: 3000 }
+        ];
+
+        const rosterContainer = document.getElementById("pilot-roster");
+
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('register-id').value.trim();
+
+            if (!/^\d{7}$/.test(id) || pilotRoster.find(p => p.id === id)) {
+                alert("Please enter a valid unique 7-digit ID or the ID is already registered.");
+                return;
+            }
+
+            pilotRoster.push({ id, points: 0, flights: 0 });
+            updateRoster();
+            alert("Registration successful!");
+        });
+
+        document.getElementById('flight-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('unique-id').value.trim();
+            const departure = document.getElementById('departure').value;
+            const arrival = document.getElementById('arrival').value;
+
+            if (!/^\d{7}$/.test(id) || departure === arrival) {
+                alert("Please enter a valid 7-digit ID and select different airports.");
+                return;
+            }
+
+            const pilot = pilotRoster.find(p => p.id === id);
+            if (!pilot) {
+                alert("This ID is not registered. Please register first.");
+                return;
+            }
+
+            let points = 25;
+            if ((departure === "MDPC" && arrival === "EFKT") || 
+                (departure === "EFKT" && arrival === "MDPC")) {
+                points = 75;
+            } else if (
+                (departure === "EGKK" && arrival === "MDPC") ||
+                (departure === "EFKT" && arrival === "EGKK") ||
+                (departure === "GCLP" && arrival === "EFKT") ||
+                (departure === "LYTV" && arrival === "EFKT") ||
+                (departure === "LYTV" && arrival === "MDPC")
+            ) {
+                points = 50;
+            }
+
+            pilot.points += points;
+            pilot.flights += 1;
+
+            updateRoster();
+            alert(`Flight logged! You earned ${points} AeroPoints.`);
+        });
+
+        function updateRoster() {
+            rosterContainer.innerHTML = '';
+
+            pilotRoster.sort((a, b) => b.points - a.points).forEach(pilot => {
+                const rank = ranks.slice().reverse().find(r => pilot.points >= r.minPoints).name;
+
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `
+                    <p><span class="rank">${rank}</span></p>
+                    <p>ID: ${pilot.id}</p>
+                    <p>Flights Logged: ${pilot.flights}</p>
+                    <p>AeroPoints: <span class="points">${pilot.points}</span></p>
+                `;
+                rosterContainer.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
